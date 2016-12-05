@@ -21,7 +21,7 @@ sourceCompatibility = '1.6'
 targetCompatibility = '1.6'
 
 
-group = 'de.felixschulze.gradle'
+group = 'com.github.3mph4515'
 
 ext.archivesBaseName = 'gradle-hockeyapp-plugin'
 ext.isSnapshot = version.endsWith("-SNAPSHOT")
