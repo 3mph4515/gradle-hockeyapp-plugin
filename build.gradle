@@ -5,7 +5,7 @@ buildscript {
     }
     dependencies {
         classpath 'com.github.townsfolk:gradle-release:1.2'
-        classpath 'com.github.ben-manes:gradle-versions-plugin:0.11.3'
+        classpath 'com.github.ben-manes:gradle-versions-plugin:0.13.0'
     }
 }
 
@@ -34,9 +34,9 @@ dependencies {
     compile localGroovy()
     compile gradleApi()
     compile 'commons-io:commons-io:2.4'
-    compile 'org.apache.httpcomponents:httpclient:4.5.1'
-    compile 'org.apache.httpcomponents:httpmime:4.5.1'
-    compile 'com.android.tools.build:gradle:1.5.0'
+    compile 'org.apache.httpcomponents:httpclient:4.5.2'
+    compile 'org.apache.httpcomponents:httpmime:4.5.2'
+    compile 'com.android.tools.build:gradle:2.2.2'
     compile 'de.felixschulze.teamcity:teamcity-status-message-helper:1.2'
 
     testCompile 'junit:junit:4.12'
@@ -118,7 +118,7 @@ def getPomConfiguration() {
         name 'Gradle HockeyApp Plugin'
         packaging 'jar'
         description 'A Gradle plugin for uploading iOS and Android Apps to HockeyApp.'
-        url 'https://github.com/x2on/gradle-hockeyapp-plugin'
+        url 'https://github.com/3mph4515/gradle-hockeyapp-plugin'
         licenses {
             license {
                 name 'The MIT License'
@@ -134,9 +134,19 @@ def getPomConfiguration() {
             }
         }
         scm {
-            connection 'scm:https://x2on@github.com/x2on/gradle-hockeyapp-plugin'
-            developerConnection 'scm:git@github.com:x2on/gradle-hockeyapp-plugin.git'
-            url 'https://github.com/x2on/gradle-hockeyapp-plugin'
+            connection 'scm:https://3mph4515@github.com/3mph4515/gradle-hockeyapp-plugin'
+            developerConnection 'scm:git@github.com:3mph4515/gradle-hockeyapp-plugin.git'
+            url 'https://github.com/3mph4515/gradle-hockeyapp-plugin'
         }
     }
+}
+
+def getReleaseRepositoryUrl() {
+    return hasProperty('RELEASE_REPOSITORY_URL') ? RELEASE_REPOSITORY_URL
+            : "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+}
+
+def getSnapshotRepositoryUrl() {
+    return hasProperty('SNAPSHOT_REPOSITORY_URL') ? SNAPSHOT_REPOSITORY_URL
+            : "https://oss.sonatype.org/content/repositories/snapshots/"
 }
