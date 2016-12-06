@@ -27,7 +27,9 @@ ext.archivesBaseName = 'gradle-hockeyapp-plugin'
 ext.isSnapshot = version.endsWith("-SNAPSHOT")
 
 repositories {
+    mavenLocal()
     mavenCentral()
+    jcenter()
 }
 
 dependencies {
