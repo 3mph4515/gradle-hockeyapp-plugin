@@ -16,7 +16,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'de.felixschulze.gradle:gradle-hockeyapp-plugin:3.5'
+        classpath 'com.github.3mph4515:gradle-hockeyapp-plugin$LAST_VERSION'
     }
 }
 
@@ -85,6 +85,10 @@ hockeyapp {
 * `teams`: Optional: restrict download to comma-separated list of team IDs; example teams 123, 213 with 123,213 being database ids of your teams
 * `users`: Optional: restrict download to comma-separated list of user IDs; example:
 					users=1224,5678 with 1224 and 5678 being the database IDs of your users
+* `teamId`: Optional: add specific team or list of teams to project. IDs(comma-separated); example:
+					teamId=1224,5678 with 1224 and 5678 being the database IDs of your teams
+* `restoreAllowed`: Optional: Allow to download any version of app. (By default only last app version is downloadable).	
+* `ownerId`: Optional: Set owner to the application. Should be ID of organization.	
 * `variantToApiToken`: Optional: `[variantName: "YOURHOCKEYAPITOKEN", variantName2: "YOUROTHERHOCKEYAPITOKEN"]` map between your variants and api tokens
 * `variantToApplicationId`:  Optional (Android): `[variantName: "hockeyAppAppId", variantName2: "hockeyAppAppId2"]` map between your variants and HockeyApp application IDs
 * `variantToMandatory`: Optional: `[variantName: "0", variantName2: "1"]` map between your variants and mandatory
