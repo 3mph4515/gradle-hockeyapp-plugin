@@ -39,6 +39,8 @@ import org.apache.http.HttpStatus
 import org.apache.http.client.HttpClient
 import org.apache.http.client.config.RequestConfig
 import org.apache.http.client.methods.HttpPost
+import org.apache.http.client.methods.HttpPut
+import org.apache.http.entity.StringEntity
 import org.apache.http.entity.mime.MultipartEntityBuilder
 import org.apache.http.entity.mime.content.FileBody
 import org.apache.http.entity.mime.content.StringBody
@@ -250,6 +252,11 @@ class HockeyAppUploadTask extends DefaultTask {
                     logger.info("Upload information: Title: '" + uploadResponse.title?.toString() + "' Config url: '" + uploadResponse.config_url?.toString()) + "'";
                     logger.debug("Upload response: " + uploadResponse.toString())
                     logger.lifecycle("Application public url " + uploadResponse.public_url?.toString())
+
+                    if (uploadResponse.public_identifier) {
+                        addTeamToProject(uploadResponse.public_identifier.toString(), hockeyApp.teamId)
+                        setRestoreAllowed(uploadResponse.public_identifier.toString(), hockeyApp.restoreAllowed)
+                    }
                 }
             }
             if (hockeyApp.teamCityLog) {
@@ -290,6 +297,97 @@ class HockeyAppUploadTask extends DefaultTask {
             }
         }
         throw new IllegalStateException("File upload failed: " + response.getStatusLine().getStatusCode() + " " + response.getStatusLine().getReasonPhrase());
+    }
+
+    def void addTeamToProject(String projectId, String teamId) {
+        if (!teamId) return
+
+        def teamIdList = teamId.tokenize(',')
+        for (id in teamIdList) {
+            ProgressLoggerWrapper progressLogger = new ProgressLoggerWrapper(project, "Applying post upload actions");
+            progressLogger.started()
+
+            RequestConfig.Builder requestBuilder = RequestConfig.custom()
+            requestBuilder = requestBuilder.setConnectTimeout(hockeyApp.timeout)
+            requestBuilder = requestBuilder.setConnectionRequestTimeout(hockeyApp.timeout)
+
+            String proxyHost = System.getProperty("http.proxyHost", "")
+            int proxyPort = System.getProperty("http.proxyPort", "0") as int
+            if (proxyHost.length() > 0 && proxyPort > 0) {
+                logger.lifecycle("Using proxy: " + proxyHost + ":" + proxyPort)
+                HttpHost proxy = new HttpHost(proxyHost, proxyPort);
+                requestBuilder = requestBuilder.setProxy(proxy)
+            }
+
+            HttpClientBuilder builder = HttpClientBuilder.create();
+            builder.setDefaultRequestConfig(requestBuilder.build());
+            HttpClient httpClient = builder.build();
+
+            def updateUrl = "${hockeyApp.hockeyApiUrl}/${projectId}/app_teams/${id}"
+            logger.debug("Update url: ${updateUrl}")
+
+
+            HttpPut httpPut = new HttpPut(updateUrl)
+            httpPut.addHeader("X-HockeyAppToken", getApiToken())
+            logger.info("Will update: ${updateUrl}")
+            logger.info("Request: " + httpPut.getRequestLine().toString())
+
+            HttpResponse response = httpClient.execute(httpPut)
+
+            logger.debug("Response status code: " + response.getStatusLine().getStatusCode())
+
+            if (response.getStatusLine().getStatusCode() < 400) {
+                logger.lifecycle("Application updated successfully.")
+                progressLogger.completed()
+            } else {
+                logger.lifecycle("Application update failed: " + response.getStatusLine().getStatusCode() + " " + response.getStatusLine().getReasonPhrase())
+            }
+        }
+    }
+
+    def void setRestoreAllowed(String projectId, boolean restoreAllowed) {
+        ProgressLoggerWrapper progressLogger = new ProgressLoggerWrapper(project, "Applying restoreAllowed ${restoreAllowed}");
+        progressLogger.started()
+
+        RequestConfig.Builder requestBuilder = RequestConfig.custom()
+        requestBuilder = requestBuilder.setConnectTimeout(hockeyApp.timeout)
+        requestBuilder = requestBuilder.setConnectionRequestTimeout(hockeyApp.timeout)
+
+        String proxyHost = System.getProperty("http.proxyHost", "")
+        int proxyPort = System.getProperty("http.proxyPort", "0") as int
+        if (proxyHost.length() > 0 && proxyPort > 0) {
+            logger.lifecycle("Using proxy: " + proxyHost + ":" + proxyPort)
+            HttpHost proxy = new HttpHost(proxyHost, proxyPort);
+            requestBuilder = requestBuilder.setProxy(proxy)
+        }
+
+        HttpClientBuilder builder = HttpClientBuilder.create();
+        builder.setDefaultRequestConfig(requestBuilder.build());
+        HttpClient httpClient = builder.build();
+
+        def updateUrl = "${hockeyApp.hockeyApiUrl}/${projectId}/meta"
+        logger.debug("Update url: ${updateUrl}")
+
+
+        HttpPut httpPut = new HttpPut(updateUrl)
+        String restoreProperty = restoreAllowed ? "enabled" : "disabled"
+        StringEntity params = new StringEntity("restore_allowed=${restoreProperty}","UTF-8");
+        httpPut.setEntity(params);
+
+        httpPut.addHeader("X-HockeyAppToken", getApiToken())
+        logger.info("Will update: ${updateUrl}")
+        logger.info("Request: " + httpPut.getRequestLine().toString())
+
+        HttpResponse response = httpClient.execute(httpPut)
+
+        logger.debug("Response status code: " + response.getStatusLine().getStatusCode())
+
+        if (response.getStatusLine().getStatusCode() < 400) {
+            logger.lifecycle("Application updated successfully.")
+            progressLogger.completed()
+        } else {
+            logger.lifecycle("Application update failed: " + response.getStatusLine().getStatusCode() + " " + response.getStatusLine().getReasonPhrase())
+        }
     }
 
     private void decorateWithOptionalProperties(MultipartEntityBuilder entityBuilder) {

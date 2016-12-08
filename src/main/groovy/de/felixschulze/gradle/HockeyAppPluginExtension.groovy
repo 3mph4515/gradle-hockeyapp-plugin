@@ -63,6 +63,8 @@ class HockeyAppPluginExtension {
     def String hockeyApiUrl = "https://rink.hockeyapp.net/api/2/apps"
     def boolean allowMultipleAppFiles = true
     def String ownerId = null
+    def String teamId = null
+    def boolean restoreAllowed = false
 
 
     private final Project project
